@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>oh_translate</title>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+    <script src="http://cdn.bootcss.com/blueimp-md5/1.1.0/js/md5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <style>
+        body {
+            font-size: 16px;
+            font-family: 'Microsoft YaHei';
+        }
+        input {
+            height: 24px;
+            font-size: 14px;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+<div id="chat">
+    <p>input your word:</p> <input type="text" v-model="question">
+    <p>{{ anwser }}</p>
+</div>
+
+<script>
+    function onBack(res) {
+        var errCode = res.error_code;
+        console.log(errCode);
+        var answer;
+        if (!errCode) {
+            answer = res.trans_result;
+            data.anwser = answer ? answer[0].dst : "Sorry, I'm taking a rest now, please come here later";
+        } else if (errCode === '54003' || errCode === '54005') {
+            //  过于频繁
+            data.anwser = "too busy, slow down";
+        } else if (errCode === '54004') {
+            //  余额不足
+            data.anwser = "no money left, can you donate some money to me? this is my Alipay account: 1090240706@qq.com";
+        } else if (errCode === '58001' || errCode === '54001' || errCode === '52003') {
+            //  语言无法识别
+            data.anwser = "are the words you entered form Mars?";
+        }
+    }
+    var data = {
+        question: '',
+        anwser: 'I can translate it for you, just type'
+    };
+    var vm = new Vue({
+        el: '#chat',
+        data: data,
+        methods: {
+            getAnwser: _.debounce(
+                function () {
+                    if (!this.question.trim()) {
+                        this.anwser = "I can translate it for you, just type";
+                        return;
+                    }
+                    var salt = 1435660288;
+                    var sign = md5('20180328000140946' + this.question + '1435660288V2ZftQR4ZQL4ynRt9nGo');
+                    var script = document.createElement('script');
+
+                    var q = new TextEncoder('utf8').encode(this.question);
+                    script.type = 'text/javascript';
+                    //  百度翻译  http://api.fanyi.baidu.com/api/trans/vip/translate
+                    //  图灵机器人  http://openapi.tuling123.com/openapi/api/v2
+                    //  传参并指定回调执行函数为onBack
+                    script.src = 'http://api.fanyi.baidu.com/api/trans/vip/translate?q=' + this.question + '&from=auto&to=auto&appid=20180328000140946&salt=' + salt + '&sign=' + sign + '&callback=onBack';
+                    document.head.appendChild(script);
+                }, 500
+            )
+        },
+        watch: {
+            question: function (newQ, oldQ) {
+                this.anwser = 'Waiting for you to stop typing...';
+                this.getAnwser();
+            }
+        }
+    });
+</script>
+</body>
+</html>
