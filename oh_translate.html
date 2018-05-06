@@ -11,17 +11,23 @@
             font-size: 16px;
             font-family: 'Microsoft YaHei';
         }
+
         input {
             height: 24px;
             font-size: 14px;
             outline: none;
         }
+
     </style>
 </head>
 <body>
 <div id="chat">
-    <p>input your word:</p> <input type="text" v-model="question">
-    <p>{{ anwser }}</p>
+    <p>input your word:</p> <input type="text" v-model="question" :style="fromObject">
+    <p :style="toObject">{{ anwser }}</p>
+
+        <span>from</span> <select-box :my-value="lanArrs" v-model="FromLan"></select-box>
+        <span>to</span> <select-box :my-value="lanArrs" v-model="toLan"></select-box>
+
 </div>
 
 <script>
@@ -45,11 +51,63 @@
     }
     var data = {
         question: '',
-        anwser: 'I can translate it for you, just type'
+        anwser: 'I can translate it for you, just type',
+        FromLan: 'auto',
+        toLan: 'auto',
+        lanArrs: [
+            {value: 'auto', text: '自动检测'},
+            {value: 'zh', text: '中文'},
+            {value: 'en', text: '英文'},
+            {value: 'yue', text: '粤语'},
+            {value: 'wyw', text: '文言文'},
+            {value: 'cht', text: '繁体中文'},
+            {value: 'jp', text: '日语'},
+            {value: 'kor', text: '韩语'},
+            {value: 'fra', text: '法语'},
+            {value: 'spa', text: '西班牙语'},
+            {value: 'th', text: '泰语'},
+            {value: 'ara', text: '阿拉伯语'},
+            {value: 'ru', text: '俄语'},
+            {value: 'pt', text: '葡萄牙语'},
+            {value: 'de', text: '德语'},
+            {value: 'it', text: '意大利语'},
+            {value: 'el', text: '希腊语'},
+            {value: 'nl', text: '荷兰语'},
+            {value: 'pl', text: '波兰语'},
+            {value: 'bul', text: '保加利亚语'},
+            {value: 'est', text: '爱沙尼亚语'},
+            {value: 'dan', text: '丹麦语'},
+            {value: 'fin', text: '芬兰语'},
+            {value: 'cs', text: '捷克语'},
+            {value: 'rom', text: '罗马尼亚语'},
+            {value: 'slo', text: '斯洛文尼亚语'},
+            {value: 'swe', text: '瑞典语'},
+            {value: 'hu', text: '匈牙利语'},
+            {value: 'vie', text: '越南语'}
+        ],
+        fromObject: {},
+        toObject: {}
     };
+    var selectBox = {
+        model: {
+            prop: 'checked',
+            event: 'change'
+        },
+        props: ['myValue'],
+        template: `<select>
+                    <option v-for="option in values" :value="option.value">{{ option.text }}</option>
+                   </select>`,
+        data: function () {
+            return {values: this.myValue};
+        }
+    };
+
     var vm = new Vue({
         el: '#chat',
         data: data,
+        components: {
+            'select-box': selectBox
+        },
         methods: {
             getAnwser: _.debounce(
                 function () {
